@@ -1,4 +1,4 @@
-# geonet
+# posarrays
 Matlab utility for reading GPS position files from Japan's GEONET 
 
 After downloading F3 coordinates from GSI, place all yearly directories into a single 'master' directory, then run:
