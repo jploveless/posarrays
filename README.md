@@ -26,5 +26,5 @@ Run:
     % Save arrays as .mat file. Re-read in as a structure. 
     save panga.mat -struct s
 
-
+These commands will arrange all data into position and uncertainty matrices, with each row corresponding to a station and each column corresponding to a day. The number of columns spans the full time series, from the first day on which any day was collecting through the last day available in the downloaded files. Zero values are given for days on which no observation was made. Matrices are stored as fields in a MATLAB structure. 
    
