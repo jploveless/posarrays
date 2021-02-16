@@ -14,12 +14,17 @@ dayOne = datenum(1994, 1, 1); % some arbitrarily early date
 
 % Get files or directories
 contents = dir(posdir);
+
 if strmatch(contents(1).name, '.DS_Store')
    contents(1) = [];
 end
-if sum([contents.isdir]) == numel(contents) % If they're all directories...
+id = [contents.isdir];
+if sum(id) > 0 % If there are subdirectories...
+   if strmatch(contents(1).name, '..')
+      id(1) = false;
+   end
+   contents = contents(id); % just keep the directories
    numDir = numel(contents); % ...we have that many directories to search
-   contents = contents([contents.isdir]); % just keep the directories
 else
    numDir = 1; % Otherwise, we have one directory...
    clear contents
