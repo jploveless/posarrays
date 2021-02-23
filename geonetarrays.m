@@ -1,6 +1,6 @@
-function posarrays(posdir, outfile, varargin)
-% POSARRAYS  Reads .pos files and places the data into large arrays.
-%    POSARRAYS(DIREC, OUTFILE) reads .pos position files from DIREC (or
+function geonetarrays(posdir, outfile, varargin)
+% GEONETARRAYS  Reads .pos files and places the data into large arrays.
+%    GEONETARRAYS(DIREC, OUTFILE) reads .pos position files from DIREC (or
 %    its subdirectories) and places the data into a structure containing
 %    large arrays, which is written to the output .mat OUTFILE.  DIREC 
 %    can be a master directory containing yearly directories of .pos files,
