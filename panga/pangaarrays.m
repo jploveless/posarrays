@@ -8,16 +8,23 @@ function panga = placepanga(coords, fulldate)
 %
 
 if ischar(coords)
-   % Read reference coordinate file
-   fid = fopen(coords, 'r');
-   c = textscan(fid, '%s %f %f\n');
-   name = char(c{1});
-   refn = c{2};
-   refe = wrapTo360(c{3});
    % Get path of coords. file
-   [p, f] = fileparts(coords);
+   [p, f, e] = fileparts(coords);
    if isempty(p)
       p = '.';
+   end
+   if ~startsWith(e, '.mat') % If a text file, 
+      % Read reference coordinate file
+      fid = fopen(coords, 'r');
+      c = textscan(fid, '%s %f %f\n');
+      name = char(c{1});
+      refn = c{2};
+      refe = wrapTo360(c{3});
+   else % If a .mat file,
+      c = load(coords);
+      name = c.name;
+      refe = c.lon;
+      refn = c.lat;
    end
 else
    name = coords.name;

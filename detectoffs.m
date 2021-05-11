@@ -2,9 +2,8 @@ function offs = detectoffs(s, sdm)
 % detectoffs   Detects additional offsets in time series
 %   offs = detectoffs(s, sdm) detects additional offsets in 
 %   PANGA time series, given in structure s, which includes
-%   fields pos and pos2, reflecting cleaned positions from 
-%   dailyslopes.m. New offsets are based on daily jumps that 
-%   exceed a specified multiple of standard deviations, sdm.
+%   position fields sde and sdn. New offsets are based on daily jumps
+%   that exceed a specified multiple of standard deviations, sdm.
 %
 
 % Array sizes

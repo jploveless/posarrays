@@ -45,6 +45,7 @@ for i = 1:ns
    sigma = diag(1./unc(i, keep).^2);
    % Calculate model covariance using backslash
    wcov = (wslopemat'*sigma*wslopemat)\eye(size(wslopemat, 2));
+   covv = sqrt(diag(wcov)); % Diagonal components of covariance
    % Calculate model parameters
    wslope = wcov*wslopemat'*sigma*pos(i, keep)';
    perpos = wslopemat(:, 1:end)*wslope(1:end); % Predicted positions from model

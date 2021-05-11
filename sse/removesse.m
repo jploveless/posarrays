@@ -24,6 +24,7 @@ function [ nosse ] = removesse(s)
 %   nosse = removesse(file) creates structure s by reading the variables saved in
 %   the specified filename. 
 %
+%   Code by Juliette Saux
 
 if ischar(s)
    s = load(s);
@@ -45,7 +46,7 @@ b = size(posdate,2); % gives number of days
 nosse.eastpos = zeros(a,b);
 nosse.northpos = zeros(a,b);
 nosse.date = zeros(a,b);
-nosse.SSE = zeros(a,b);
+nosse.SSEstart = zeros(a,b);
 nosse.SSEnum = zeros(a,1);
 
 
@@ -72,14 +73,14 @@ for i = 1:size(posdate,1); % goes through each station and "corrects" the east a
     
     nz = startdate ~=0; %finds and saves nonzero values of startdates, so finds the real start days of SSEs 
     startdate = startdate(1,nz);
-   
+    if ~isempty(startdate) % If there are any SSEs felt at this station,
+       date(date < startdate(1)) = 0; % Set dates prior to the first SSE to zero
+    end
     eastdisp = eastVel(i,idx);%saves SSE velocities corresponding to the unique SSEs in line 51.
     eastdisp = eastdisp(1,nz); %saves displacement values that have corresponding start days for station i (line 59)
     northdisp = northVel(i,idx); %does the same but for north displacement
     northdisp = northdisp(1,nz);
-    
- 
-    
+
   
         for k = 1:length(startdate(1,:))
  
@@ -94,22 +95,16 @@ for i = 1:size(posdate,1); % goes through each station and "corrects" the east a
  nosse.eastpos(i,:) = epos(1,:);
  nosse.northpos(i,:) = npos(1,:);
  nosse.date(i,:) = date(1,:);
- nosse.SSE(i,1:length(startdate)) = startdate; %saves the stardate of each event felt for each station
+ nosse.SSEstart(i,1:length(startdate)) = startdate; %saves the stardate of each event felt for each station
  nosse.SSEnum(i,1) = length(startdate);%saves the number of events felt by each station.
         
 end
 
 
 
-nosse.SSE(:,max(nosse.SSEnum)+1 :end)=[];%deletes the zeros at the end of  the stardate list
+nosse.SSEstart(:,max(nosse.SSEnum)+1 :end)=[];%deletes the zeros at the end of  the stardate list
 
-eastpos = nosse.eastpos;
-northpos = nosse.northpos;
-date = nosse.date;
-sse = nosse.SSE;
-SSEnum = nosse.SSEnum;
 
-save('nosse', 'eastpos', 'northpos', 'date', 'sse', 'SSEnum' )
 end
 
 

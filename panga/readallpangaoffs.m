@@ -9,11 +9,13 @@ function snew = readallpangaoffs(s)
 %  and placepangaoffs. 
 %
 
-s.offs = zeros(size(s.sdate)); % Allocate space for offsets
+snew = s;
+
+snew.offs = zeros(size(s.sdate)); % Allocate space for offsets
 for i = 1:length(s.sname) % For each station,
-   if exist(['raw/' panga.sname(i, :) '.lon'])
-      offs = readpangaoffs(panga.sname(i, :)); % Read header offsets
+   if exist(['raw/' s.sname(i, :) '.lon'])
+      offs = readpangaoffs(['raw/' s.sname(i, :)]); % Read header offsets
       % Place offsets into date array format
-      s.offs(i, :) = placepangaoffs(offs, max(panga.sdate, [], 1));
+      snew.offs(i, :) = placepangaoffs(offs, max(s.sdate, [], 1));
    end
 end

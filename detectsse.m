@@ -28,6 +28,9 @@ function outsse = detectsse(s, np, propthresh, minsta)
 %   slopemult is automatically converted to a negative number, as we
 %   assume that an SSE produces motion opposite the long-term, 
 %   nominally interseismic motion. 
+%
+%   Code by Elias Molitors Bergman and Jack Loveless
+%
 
 warning off 'MATLAB:nearlySingularMatrix'
 
@@ -43,13 +46,9 @@ nzdates = s.sdate > 0; % Logical array identifying days on which observations ex
 fulldate = max(s.sdate); % All real date numbers
 sse = false(ns, nd); % sse is a logical identifying days on which an SSE is nominally detected
 duration = double(sse);
+startdate = duration;
 first = sse;
 last = sse;
-ssecount = sse;
-ssedur = sse;
-issse = sse;
-avlon = s.srefe;
-avlat = s.srefn;
 
 % Assumed thresholds
 mindur = 10; % 10-day minimum duration
@@ -64,22 +63,25 @@ dists(didx) = 1e6; % Set self distances to large numbers so that they're never f
 
 % Calculate daily slopes, if they haven't already been calculated for this time window
 if ~isfield(s, sprintf('dslopee%g', np))
-   [score, pos, unc, ltslope] = dailyslopes(s, np, 1);
-   [score2, pos2, unc2, ltslope2] = dailyslopes(s, np, 2); 
+   [score, pos, unc] = dailyslopes(s, np, 1);
+   [score2, pos2, unc2] = dailyslopes(s, np, 2); 
    s = setfield(s, sprintf('dslopee%g', np), score);
    s = setfield(s, sprintf('dslopen%g', np), score2);
-   s = setfield(s, 'pos', pos);
-   s = setfield(s, 'pos2', pos2);
-   s = setfield(s, 'unc', s.sse);
-   s = setfield(s, 'unc2', s.ssn);
+   s.pos = pos;
+   s.pos2 = pos2;
+   s.unc = unc;
+   s.unc2 = unc2; 
 else
    score = getfield(s, sprintf('dslopee%g', np));
    score2 = getfield(s, sprintf('dslopen%g', np));
-   pos = getfield(s, 'pos');
-   pos2 = getfield(s, 'pos2');
-   unc = getfield(s, 'sse');
-   unc2 = getfield(s, 'ssn');
+   pos = s.pos;
+   pos2 = s.pos2;
+   unc = s.unc;
+   unc2 = s.unc2;
 end
+
+scorethresh = zeros(ns, 1);
+nsse = scorethresh;
 
 % Determine which daily slopes are more negative than a prescribed threshold
 for i = 1:ns % For each station, 
@@ -124,7 +126,6 @@ neighbor = dists <= neighdist & dists > 0; % neighbors are stations within speci
 noneighbs = false(ns, 1); % Allocate space for logical array indicating whether station has no neighbors
 foneighbs = false(ns, 1); % Allocate space for logical array indicating whether station is the first of its neighbors to record
 for i = 1:ns
-   keep = nzdates(i, :);
    n = find(neighbor(i, :)); % list all neighbors of station i
    %-------------------------
    % Station has no neighbors
@@ -158,7 +159,6 @@ end
 
 issse = cumsum(first - last, 2); issse(last) = true;
 issse = logical(issse);
-ssecount = issse.*cumsum(first, 2);
 ssedur = issse.*duration;
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -212,10 +212,6 @@ end
 keepevent = sum(spikesta) >= minsta;
 spikebeg = spikebeg(keepevent); % Get subset of spikebeg
 spikeend = spikeend(keepevent); % Get subset of spikeend
-spikedur = spikeend - spikebeg; % Duration of spike
-spikeday = spikebeg + round(spikedur/2); % Day of spike defined as middle of duration
-nspike   = numel(spikeday); % Update number of spikes
-spikesta = spikesta(:, keepevent); % Update logical of which station felt event
 
 % Combine events with overlapping durations
 overlaps = [false, spikebeg(2:end) < spikeend(1:end-1)]; % Events that overlap
@@ -253,7 +249,6 @@ prepfigprint
 
 % Initialize final catalog variable
 counter = zeros(ns, length(spikeday));
-counter2 = counter;
 listsse = counter;
 durationsse = counter;
 eastVel = counter;
@@ -262,7 +257,6 @@ eastSig = counter;
 northSig = counter;
 
 feltsse = logical(counter);
-feltsse2 = feltsse;
 neighborfelt = feltsse;
 finalsse = zeros(ns, nd);
 
@@ -397,4 +391,14 @@ outsse.eastSig = eastSig;
 outsse.northVel = northVel;
 outsse.northSig = northSig;
 outsse.listsse = listsse;
+outsse.score = score;
+outsse.scorethresh = scorethresh;
+outsse.score2 = score2;
+outsse.name = s.sname;
 outsse.date = s.sdate;
+outsse.lon = s.srefe;
+outsse.lat = s.srefn;
+outsse.sde = s.sde;
+outsse.sdn = s.sdn;
+outsse.firstday = firstday;
+outsse.lastday = lastday;
