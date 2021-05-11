@@ -22,7 +22,7 @@ Run:
     % Run function to download raw PANGA data and unzip
     getpanga
     % Read PANGA data files and place into arrays
-    s = pangaarrays(‘raw/panga.coords’);
+    s = pangaarrays(‘raw/panga_coords.mat’);
     % Save arrays as .mat file. Re-read in as a structure. 
     save panga.mat -struct s
 
