@@ -43,6 +43,7 @@ lastday = datesright(:, end);
 % Full vector of dates
 [ns, nd] = size(s.sdate); % number of stations and dates
 nzdates = s.sdate > 0; % Logical array identifying days on which observations exist
+nzdates(s.sde == 0) = false; % Update for case where the date exists but position doesn't
 fulldate = max(s.sdate); % All real date numbers
 sse = false(ns, nd); % sse is a logical identifying days on which an SSE is nominally detected
 duration = double(sse);

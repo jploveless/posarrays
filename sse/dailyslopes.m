@@ -20,12 +20,14 @@ lastday = datesright(:, end);
 % Full vector of dates
 [ns, nd] = size(s.sdate); % number of stations and dates
 nzdates = s.sdate > 0; % Logical array identifying days on which observations exist
+nzdates(pos == 0) = false; % Update for case where the date exists but position doesn't
 fulldate = max(s.sdate); % All real date numbers
 ltslope = zeros(ns, 1); % Allocate space for long-term slopes
 dslope = zeros(ns, nd); % and daily mean slope 
 
 % Calculate long term velocities of stations
 for i = 1:ns
+i
    keep = nzdates(i, :); % Logical identifying days on which there is an observation
    % Design matrix for linear plus periodic fit 
    wslopemat = [s.sdate(i, keep)', ones(sum(keep), 1), ...
@@ -37,9 +39,14 @@ for i = 1:ns
    offs = offs(keep, :);
    if ~isempty(offs)
       if offs(1) == 0
+         offs = unique(offs', 'rows', 'stable')';
          wslopemat = [wslopemat, offs];
       end
    end
+   
+   % Check for all-zero columns
+   sum_wslopemat = sum(wslopemat);
+   wslopemat = wslopemat(:, sum_wslopemat ~= 0);
    
    % Convert uncertainties on positions to weights
    sigma = diag(1./unc(i, keep).^2);
@@ -50,8 +57,9 @@ for i = 1:ns
    wslope = wcov*wslopemat'*sigma*pos(i, keep)';
    perpos = wslopemat(:, 1:end)*wslope(1:end); % Predicted positions from model
    pos(i, keep) = pos(i, keep) - perpos'; % Correct positions by subtracting long term trend, steps, and periodic contributions
-   ltslope(i) = wslope(1); % Retain first value of wslope (no intercept)
-
+   if ~isempty(wslope)
+      ltslope(i) = wslope(1); % Retain first value of wslope (no intercept)
+   end
    % Calculate av. slope for window surrounding each day
    window = 1:(np + 1); %window of focus is size np
    lw = length(window);
