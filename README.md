@@ -1,5 +1,7 @@
 # posarrays
-Matlab utilities for reading GPS position files from Japan's GEONET and Cascadia's PANGA networks.
+Matlab utilities for reading and analyzing GPS position files.
+
+These utilities read daily position data from Japan's GEONET and Cascadia's PANGA networks and organize observations into station-by-date matrices. The sse directory contains functions for detecting and cataloging slow slip events, as well as estimating velocities from position data. 
 
 ## For GEONET:
 After downloading F3 coordinates from GSI, place all yearly directories into a single 'master' directory, then run:
@@ -22,7 +24,7 @@ Run:
     % Run function to download raw PANGA data and unzip
     getpanga
     % Read PANGA data files and place into arrays
-    s = pangaarrays(‘raw/panga.coords’);
+    s = pangaarrays(‘raw/panga_coords.mat’);
     % Save arrays as .mat file. Re-read in as a structure. 
     save panga.mat -struct s
 
