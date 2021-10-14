@@ -219,7 +219,6 @@ keepevent = sum(spikesta) >= minsta;
 spikebeg = spikebeg(keepevent); % Get subset of spikebeg
 spikeend = spikeend(keepevent); % Get subset of spikeend
 
-keyboard
 % Combine events with overlapping durations
 overlaps = [false, spikebeg(2:end) < spikeend(1:end-1)]; % Events that overlap
 spikebeg = spikebeg(~overlaps);
