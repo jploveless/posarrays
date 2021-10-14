@@ -1,11 +1,16 @@
-function ssetimeseries(sse, i, dname)
-% ssetimeseries   Plots raw position time series
-%   ssetimeseries(s, corr, sta, dirname) plots raw 
+function ssetimeseries(sse, corr, i, trem, dname)
+% ssecorrtimeseries   Plots raw and corrected position time series
+%   ssecorrtimeseries(s, corr, sta, dirname) plots raw and corrected
 %   position time series, currently only the east component. Raw
 %   position time series are contained in the structure s, as 
-%   constructed from pangaarrays.m. sta specifies the station to 
+%   constructed from pangaarrays.m. corr is a structure of position
+%   time series that have been corrected for the effects of slow
+%   slip events, using removesse.m. sta specifies the station to 
 %   plot, either as a 4-character name or as its row index in the
-%   fields of s.
+%   fields of s and corr. tremor is a structure with
+%   fields lon, lat, dep, and date, used to show tremor counts as a 
+%   histogram, for all recorded tremor within 0.5 degrees of the 
+%   station latitude.
 %   
 %   dirname is an optional argument giving 
 %   the path to a directory in which a PDF copy of the figure 
@@ -19,12 +24,20 @@ if ischar(i)
 end
 
 % Preprocessing and identifying subset of dates to plot
+cnzdates = corr.date(i, :) ~= 0;
+firstday = min(corr.date(i, cnzdates));
+[~, firstidx] = ismember(firstday, sse.date(i, :));
 %sse.date = sse.date(:, firstidx:end);
 %sse.sde = sse.sde(:, firstidx:end);
 %sse.sselogical = sse.sselogical(:, firstidx:end);
 %sse.score = sse.score(:, firstidx:end);
 nzdates = sse.date(i, :) ~= 0; % Get all nonzero dates
 
+% Find tremor indices within 0.5 latitude of station
+tremidx = trem.lat > sse.lat(i) - 0.25 & trem.lat < sse.lat(i) + 0.25;
+
+% Define gray
+thisgray = 0.25*[1 1 1];
 
 % Make figure
 figure
@@ -32,14 +45,22 @@ figure
 daterange = max(sse.date(:, 1)):max(sse.date(:, end));
 
 topax = subplot(2, 1, 1); % Position plot
-
-
-plot(sse.date(i, nzdates), sse.sde(i, nzdates), '.k'); % Plot original positions 
+% Tremor
+yyaxis(topax, 'right')
+thh = histogram(trem.date(tremidx), daterange, 'FaceColor', thisgray, 'EdgeColor', 'none', 'FaceAlpha', 1);
+ylabel('Daily tremor count')
+set(gca, 'YColor', thisgray)
 hold on
+
+yyaxis(topax, 'left')
+plot(corr.date(i, cnzdates), corr.eastpos(i, cnzdates), '.', 'color', 'b')
+plot(sse.date(i, nzdates), sse.sde(i, nzdates), '.k'); % Plot original positions 
 plot(sse.date(i, sse.sselogical(i, :)), sse.sde(i, sse.sselogical(i, :)), '.r'); % Highlight SSE detections
 % Axis limits
 aa1 = [min(sse.date(i, nzdates)), max(sse.date(i, nzdates)), ...
-       minmax(sse.sde(i, nzdates))];
+       minmax([minmax(corr.eastpos(i, cnzdates)), minmax(sse.sde(i, nzdates))])];
+% Dashed line indicating first day of corrections
+line(firstday*[1 1], aa1(3:4), 'color', 'b', 'linestyle', '--'); % Line showing score threshold
 % Tighten axis
 axis(aa1)
 ylabel('East position (mm)')
@@ -52,11 +73,17 @@ title(sse.name(i, :))
 datetick('x', 'yy', 'keeplimits')
 
 subplot(2, 1, 2) % Score plot
+% Tremor
+yyaxis right
+thh = histogram(trem.date(tremidx), daterange, 'FaceColor', thisgray, 'EdgeColor', 'none', 'FaceAlpha', 1);
+hold on
+ylabel('Daily tremor count')
+set(gca, 'YColor', thisgray)
 
+yyaxis left
 axx = get(gcf, 'children');
 allscores = sse.score(i, nzdates);
 dvh = plot(sse.date(i, nzdates), allscores, '.k'); % Plot scores (daily velocities, mm/day)
-hold on
 line(axx(1).XLim, [0 0], 'color', 'k', 'linestyle', '-'); 
 aa2 = axis;
 svh = plot(sse.date(i, sse.sselogical(i, :)), sse.score(i, sse.sselogical(i, :)), '.r'); % Highlight SSE detections 

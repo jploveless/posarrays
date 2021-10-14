@@ -1,4 +1,4 @@
-function outsse = detectsse(s, np, propthresh, minsta)
+function outsse = detectsse(s, np, propthresh, minsta, scoresign)
 %detectSSE  Finds start dates and durations of SSEs
 %   detectSSE(s, np, outfile, slopemult) uses a moving window slope
 %   calculation to determine start dates and durations of slow slip events 
@@ -45,6 +45,7 @@ lastday = datesright(:, end);
 nzdates = s.sdate > 0; % Logical array identifying days on which observations exist
 nzdates(s.sde == 0) = false; % Update for case where the date exists but position doesn't
 fulldate = max(s.sdate); % All real date numbers
+fulldate = max(s.sdate(:, 1)):max(s.sdate(:, end));
 sse = false(ns, nd); % sse is a logical identifying days on which an SSE is nominally detected
 duration = double(sse);
 startdate = duration;
@@ -83,6 +84,10 @@ end
 
 scorethresh = zeros(ns, 1);
 nsse = scorethresh;
+if ~exist('scoresign', 'var')
+   scoresign = 1;
+end
+score = scoresign*score;
 
 % Determine which daily slopes are more negative than a prescribed threshold
 for i = 1:ns % For each station, 
@@ -145,7 +150,7 @@ for i = 1:ns
       end
       preneigh = startdate(i, first(i, :)) < min(firstday(n)); % Indices of this station's SSEs that occurred before neighbors were installed
       surrounding = zeros(nsse(i), length(n)); % Allocate space for temporally close SSEs at neighbors
-      for k = 1:length(n) 
+      for k = 1:length(n)
          surrounding(:, k) = ismembertol(startdate(i, first(i, :)), startdate(n(k), first(n(k), :)), np, 'DataScale', 1); % Same SSEs at neighbors defined as those within np days
       end
       ikeep = sum(surrounding, 2) >= length(n)/10; % Keep SSEs felt by more than 1/10 of neighbors
@@ -214,6 +219,7 @@ keepevent = sum(spikesta) >= minsta;
 spikebeg = spikebeg(keepevent); % Get subset of spikebeg
 spikeend = spikeend(keepevent); % Get subset of spikeend
 
+keyboard
 % Combine events with overlapping durations
 overlaps = [false, spikebeg(2:end) < spikeend(1:end-1)]; % Events that overlap
 spikebeg = spikebeg(~overlaps);
