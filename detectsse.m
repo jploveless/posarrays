@@ -94,16 +94,18 @@ for i = 1:ns % For each station,
    [scoren, scorex] = hist(score(i, score(i, :) < 0), 100); % Histogram of negative daily slopes, 100 bins
    scoren = cumsum(fliplr(scoren))./sum(scoren); % Normalize histogram
    scorex = fliplr(scorex);
+   if sum(isnan(scoren)) < 100
    scorethresh(i) = scorex(find(scoren > propthresh, 1)); % Define the slope value of the nth percentile of negative slopes
    %
    % "sse" is logical array that is true for days on which an SSE is detected
    %
    sse(i, :) = score(i, :) < scorethresh(i); % Extract daily slopes that exceed the proportional threshold
-   difference = diff(sse(i, :)); % Take the difference of sse to define starts and ends
-   first(i, :) = [false(1), difference == 1]; % Event start dates are those going from a 0 to a 1; during the event, diff is 0.
-   last(i, :) = [difference == -1, false(1)]; % Event end dates are those going from a 1 to a 0
+   difference = diff([false, sse(i, :), false]); % Take the difference of sse to define starts and ends
+   first(i, :) = [difference(1:end-1) == 1]; % Event start dates are those going from a 0 to a 1; during the event, diff is 0.
+   last(i, :) = [difference(2:end) == -1]; % Event end dates are those going from a 1 to a 0
    firstdate = fulldate(first(i, :))'; % Get numerical date; add 1 because of shifted indexing of the diff operation
    lastdate = fulldate(last(i, :))'; % No need to shift indexing for last date
+   if length(firstdate) ~= length(lastdate); keyboard; end
    ssedays = lastdate - firstdate + 1; % Add 1 because Duration should be all the days of detection
    good = ssedays >= mindur; % SSE must be longer than mindur days
 
@@ -117,6 +119,7 @@ for i = 1:ns % For each station,
    % Create start date matrix, assigning start date to columns of SSE starts
    startdate(i, first(i, :)) = fulldate(first(i, :));
    nsse(i) = length(find(startdate(i, :))); % number of good SSEs detected at this station
+   end
 end % End SSE detection loop
 
 % Columns of startdate:
@@ -177,10 +180,10 @@ ssedur = issse.*duration;
 if ~exist('minsta', 'var')
    minsta = 10;
 end
-
 many = sum(issse) >= 2; % Find dates on which 2 or more stations felt SSE
-spikeend = find(diff(many) == -1); % Ends of station number spikes
-spikebeg = find(diff(many) == 1) + 1; % Beginnings of station number spikes
+difference = diff([false, many, false]);
+spikeend = find(difference(2:end) == -1); % Ends of station number spikes
+spikebeg = find(difference(1:end-1) == 1); % Beginnings of station number spikes
 spikedur = spikeend - spikebeg; % Duration of spike
 spikeday = spikebeg + round(spikedur/2); % Day of spike
 nspike   = numel(spikeday);
