@@ -250,6 +250,7 @@ plot(plotdate(issse(latsort, :)), plotlat(issse(latsort, :)), '.k', 'markersize'
 colormap(flipud(gray))
 %patch(fulldate([spikebeg; spikeend; spikeend; spikebeg]), repmat([min(s.srefn); min(s.srefn); max(s.srefn); max(s.srefn)], size(spikeday)), 'r', 'facealpha', 0.15, 'edgecolor', 'none');
 line(fulldate([spikeday; spikeday]), repmat([min(s.srefn)-0.1; max(s.srefn)+0.1], size(spikeday)), 'color', 'r')
+text(fulldate(spikeday), ones(size(spikeday))*min(s.srefn)+0.1*(max(s.srefn) - min(s.srefn)), num2str((1:length(spikeday))'), 'color', 'r', 'horizontalalignment', 'center')
 datetick
 xlabel('Date'); ylabel('Latitude')
 axis tight
