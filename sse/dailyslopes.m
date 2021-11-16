@@ -27,7 +27,6 @@ dslope = zeros(ns, nd); % and daily mean slope
 
 % Calculate long term velocities of stations
 for i = 1:ns
-i
    keep = nzdates(i, :); % Logical identifying days on which there is an observation
    % Design matrix for linear plus periodic fit 
    wslopemat = [s.sdate(i, keep)', ones(sum(keep), 1), ...

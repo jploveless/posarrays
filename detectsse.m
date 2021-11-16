@@ -45,7 +45,6 @@ lastday = datesright(:, end);
 nzdates = s.sdate > 0; % Logical array identifying days on which observations exist
 nzdates(s.sde == 0) = false; % Update for case where the date exists but position doesn't
 fulldate = max(s.sdate); % All real date numbers
-fulldate = max(s.sdate(:, 1)):max(s.sdate(:, end));
 sse = false(ns, nd); % sse is a logical identifying days on which an SSE is nominally detected
 duration = double(sse);
 startdate = duration;
@@ -94,7 +93,7 @@ for i = 1:ns % For each station,
    [scoren, scorex] = hist(score(i, score(i, :) < 0), 100); % Histogram of negative daily slopes, 100 bins
    scoren = cumsum(fliplr(scoren))./sum(scoren); % Normalize histogram
    scorex = fliplr(scorex);
-   if sum(isnan(scoren)) < 100
+%   if sum(isnan(scoren)) < 100
    scorethresh(i) = scorex(find(scoren > propthresh, 1)); % Define the slope value of the nth percentile of negative slopes
    %
    % "sse" is logical array that is true for days on which an SSE is detected
@@ -105,7 +104,7 @@ for i = 1:ns % For each station,
    last(i, :) = [difference(2:end) == -1]; % Event end dates are those going from a 1 to a 0
    firstdate = fulldate(first(i, :))'; % Get numerical date; add 1 because of shifted indexing of the diff operation
    lastdate = fulldate(last(i, :))'; % No need to shift indexing for last date
-   if length(firstdate) ~= length(lastdate); keyboard; end
+
    ssedays = lastdate - firstdate + 1; % Add 1 because Duration should be all the days of detection
    good = ssedays >= mindur; % SSE must be longer than mindur days
 
@@ -119,7 +118,7 @@ for i = 1:ns % For each station,
    % Create start date matrix, assigning start date to columns of SSE starts
    startdate(i, first(i, :)) = fulldate(first(i, :));
    nsse(i) = length(find(startdate(i, :))); % number of good SSEs detected at this station
-   end
+%   end
 end % End SSE detection loop
 
 % Columns of startdate:
@@ -310,24 +309,26 @@ for i = 1:ns % For each station,
             [~, loc] = ismember(ssedates, s.sdate(i, :)); % Find indices of SSE dates within station's date vector
             keep = loc ~= 0;
             loc = loc(keep);
-            finalsse(i, loc) = 1;
-            slopemat = [(ssedates(keep))', ones(size(loc))']; % Design matrix for fitting a linear function to SSE positions
-            % Convert uncertainties on positions to weights
-            sigma = diag(1./unc(i, loc).^2);
-            % Calculate model covariance using backslash
-            cov = (slopemat'*sigma*slopemat)\eye(size(slopemat, 2));
-            slope = cov*slopemat'*sigma*pos(i, loc)';
-            % Calculate model parameters
-            eastVel(i, j) = diff(slopemat([1; end], :)*slope); % Displacement is difference between function evaluated on first and last days
-            eastSig(i, j) = sqrt(cov(1));
+            if ~isempty(loc)
+				finalsse(i, loc) = 1;
+				slopemat = [(ssedates(keep))', ones(size(loc))']; % Design matrix for fitting a linear function to SSE positions
+				% Convert uncertainties on positions to weights
+				sigma = diag(1./unc(i, loc).^2);
+				% Calculate model covariance using backslash
+				cov = (slopemat'*sigma*slopemat)\eye(size(slopemat, 2));
+				slope = cov*slopemat'*sigma*pos(i, loc)';
+				% Calculate model parameters
+				eastVel(i, j) = diff(slopemat([1; end], :)*slope); % Displacement is difference between function evaluated on first and last days
+				eastSig(i, j) = sqrt(cov(1));
  
-            sigma = diag(1./unc2(i, loc).^2);
-            % Calculate model covariance using backslash
-            cov = (slopemat'*sigma*slopemat)\eye(size(slopemat, 2));
-            % Calculate model parameters
-            slope = cov*slopemat'*sigma*pos2(i, loc)';
-            northVel(i, j) = diff(slopemat([1; end], :)*slope);
-            northSig(i, j) = sqrt(cov(1));
+				sigma = diag(1./unc2(i, loc).^2);
+				% Calculate model covariance using backslash
+				cov = (slopemat'*sigma*slopemat)\eye(size(slopemat, 2));
+				% Calculate model parameters
+				slope = cov*slopemat'*sigma*pos2(i, loc)';
+				northVel(i, j) = diff(slopemat([1; end], :)*slope);
+				northSig(i, j) = sqrt(cov(1));
+            end
         end
     end
 end

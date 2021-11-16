@@ -16,7 +16,7 @@ aa = findobj(fig, 'type', 'axes');
 for i = 1:length(aa)
    set(aa(i), 'fontsize', fs, 'linewidth', lw, 'ticklength', tl, 'layer', 'top', 'box', 'on');
    cc = findobj(aa(i), '-not', {'type', 'image', '-or', 'type', 'patch'});
-   set(cc, 'linewidth', lw);
+%   set(cc, 'linewidth', lw);
 end
 
 set(fig, 'paperpositionmode', 'auto')

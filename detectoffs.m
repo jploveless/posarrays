@@ -17,8 +17,8 @@ offs = steps;
 
 % Loop through stations
 for i = 1:ns
-   ipt = findchangepts(s.pos(i, nzdates(i, :)), 'Statistic','std','MinThreshold',1200);
-   ipt2 = findchangepts(s.pos2(i, nzdates(i, :)), 'Statistic','std','MinThreshold',1200);
+   ipt = findchangepts(s.sde(i, nzdates(i, :)), 'Statistic','std','MinThreshold',1200);
+   ipt2 = findchangepts(s.sdn(i, nzdates(i, :)), 'Statistic','std','MinThreshold',1200);
    ipt = sort(unique([ipt, ipt2]));
    thesedates = s.sdate(i, nzdates(i, :));
    [~, idx] = ismember(thesedates(ipt), fulldates);
