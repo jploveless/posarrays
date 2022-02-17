@@ -93,11 +93,11 @@ for i = 1:ns % For each station,
    [scoren, scorex] = hist(score(i, score(i, :) < 0), 100); % Histogram of negative daily slopes, 100 bins
    scoren = cumsum(fliplr(scoren))./sum(scoren); % Normalize histogram
    scorex = fliplr(scorex);
-%   if sum(isnan(scoren)) < 100
    scorethresh(i) = scorex(find(scoren > propthresh, 1)); % Define the slope value of the nth percentile of negative slopes
    %
    % "sse" is logical array that is true for days on which an SSE is detected
    %
+
    sse(i, :) = score(i, :) < scorethresh(i); % Extract daily slopes that exceed the proportional threshold
    difference = diff([false, sse(i, :), false]); % Take the difference of sse to define starts and ends
    first(i, :) = [difference(1:end-1) == 1]; % Event start dates are those going from a 0 to a 1; during the event, diff is 0.
