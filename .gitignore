@@ -1,2 +1,6 @@
-
 .DS_Store
+panga/raw
+panga/tsplots_east
+All_PANGA_East_Time_Series.pdf
+panga/block/results*
+panga/slip/pangasse_totalslip.mat
